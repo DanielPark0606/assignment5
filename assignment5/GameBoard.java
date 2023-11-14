@@ -20,10 +20,10 @@ public class GameBoard {
     // generate feedback through string output
 
     public String generateFeedback(String playerGuessInput) {
-        String feedback = "";
+        String feedback;
         if(playerGuessInput.equals("HISTORY")){
             feedback = getFeedbackHistory();
-            System.out.println();
+            //System.out.println();
         }
         else {
             // Parse the player's input into a Code object (R,G,B,O,...)
@@ -32,13 +32,13 @@ public class GameBoard {
                 playerGuessColors[i] = String.valueOf(playerGuessInput.charAt(i));
             }
             // checks if code is valid or not
-            Code playerGuess = new Code();
+            Code playerGuess = new Code(playerGuessColors, playerGuessInput);
             // check error message when it is invalid guess
             if(!playerGuess.get_valid_guess()) {
-                playerGuess.invalidFeedback(playerGuessColors, playerGuessInput);
+                feedback = playerGuess.invalidFeedback(playerGuessColors, playerGuessInput);
             }
             // checks what peg it generates if code is valid
-            if(playerGuess.get_valid_guess()) {
+            else {
                 feedback = generatePegs(playerGuess);
             }
         }
@@ -71,9 +71,6 @@ public class GameBoard {
         // print out code, tabs, feedback
         String output = "";
         for(int i = 0; i <feedbackHistory.size(); i++){
-//            System.out.print(playerGuesses.get(i).getStringColors());
-//            System.out.print("\t\t");
-//            System.out.println(feedbackHistory.get(i));
             output += playerGuesses.get(i).getStringColors() + "\t\t" + feedbackHistory.get(i) + "\n";
         }
         return output;
@@ -110,7 +107,7 @@ public class GameBoard {
                             whitePegs++;
                             guessMatched[i] = true;
                             secretCodeMatched[j] = true;
-                            break;      // avoid counting same colors multiple times
+                            break;
                         }
                     }
                 }
@@ -119,15 +116,11 @@ public class GameBoard {
             Feedback feedback = new Feedback(blackPegs, whitePegs);
             feedbackHistory.add(feedback);
             if (blackPegs == GameConfiguration.pegNumber) {
-//                System.out.println(playerGuess.getStringColors() + " -> Result: " + feedback + " - You win !!");
-//                System.out.println();
                 output = playerGuess.getStringColors() + " -> Result: " + feedback + " - You win !!";
                 remainingGuesses = 0;
             } else {
-                if (remainingGuesses != 0) {
-//                    System.out.println(playerGuess.getStringColors() + " -> Result: " + feedback);
-//                    System.out.println();
-                    output = playerGuess.getStringColors() + " -> Result: " + feedback;
+                if (remainingGuesses >= 0) {
+                    output = playerGuess.getStringColors() + " -> Result: " + feedback + "\n";
                 }
             }
         }

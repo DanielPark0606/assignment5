@@ -73,37 +73,65 @@ class ClientHandler implements Runnable
 
     @Override
     public void run() {
-        String received = null;
-        String feedback = "";
-        // initial start
-        System.out.print("You have " + GameConfiguration.guessNumber + " guesses to figure out the secret code or you lose the\n" +
-                "game. Are you ready to play?: ");
-        String code = SecretCodeGenerator.getInstance().getNewSecretCode();
-        //String code = "RBYR";
-        System.out.println();
-        //generate  secret code
-        System.out.print("Generating secret code ...");
-
-        System.out.println(" (for this example the secret code is " + code + ")");
-
-        System.out.println();
-
-        // get the secret code
-        String[] codeColors = new String[code.length()];
-        for(int i = 0; i < code.length(); i++ ){
-            codeColors[i] = String.valueOf(code.charAt(i));
-        }
-
-        // Initialize the game components
-        Code secretCode = new Code();  // checks if guess is valid
-        gameBoard = new GameBoard(secretCode, GameConfiguration.guessNumber); // set the game board
-
+        String received;
+        String feedback;
+        //boolean continueGame;
         // keep receiving guesses from client
         while (true)
         {
             try {
+                System.out.println();
+                System.out.println("Welcome to Mastermind.");
+                dos.writeUTF("Welcome to Mastermind.");
+                System.out.println();
+                System.out.println("This is a text version of the classic board game Mastermind.");
+                dos.writeUTF("This is a text version of the classic board game Mastermind.");
+                System.out.println();
+
+                // initial start
+                System.out.print("You have " + GameConfiguration.guessNumber + " guesses to figure out the secret code or you lose the\n" +
+                        "game. Are you ready to play? (Y/N): ");
+                dos.writeUTF("You have " + GameConfiguration.guessNumber + " guesses to figure out the secret code or you lose the\n" +
+                        "game. Are you ready to play? (Y/N): ");
+                received = dis.readUTF();
+                if (received.equals("Y")) {
+                    isloggedin = true;
+                    //dos.writeUTF("Y");
+                    System.out.println("Y");
+                } else {
+                    isloggedin = false;
+                    //dos.writeUTF("N");
+                    System.out.println("N");
+                }
+                // if continueGame is true suspend and output the end message and close
+
+                String code = SecretCodeGenerator.getInstance().getNewSecretCode();
+                if(isloggedin) {
+                    System.out.print("Generating secret code ... (for this example the secret code is " + code + ")");
+                    dos.writeUTF("Generating secret code ... (for this example the secret code is " + code + ")");
+                    System.out.println();
+                }
+
+                // get the secret code
+                String[] codeColors = new String[code.length()];
+                for (int i = 0; i < code.length(); i++) {
+                    codeColors[i] = String.valueOf(code.charAt(i));
+                }
+
+                // Initialize the game components
+                Code secretCode = new Code(codeColors, code);  // checks if guess is valid
+                gameBoard = new GameBoard(secretCode, GameConfiguration.guessNumber); // set the game board
+
+
                 // keep looping until game is not over and still have guesses
-                while (!gameBoard.isGameOver()) {
+                while (!gameBoard.isGameOver() && isloggedin) {
+
+                    System.out.println("You have " + gameBoard.getRemaining_guesses() + " guesses left.");
+                    System.out.println("What is your next guess?");
+                    System.out.println("Type in the characters for your guess and press enter.");
+                    System.out.println();
+                    dos.writeUTF("You have " + gameBoard.getRemaining_guesses() + " guesses left.");
+                    dos.writeUTF("What is your next guess?");
                     // receive the guess (String) from client
                     received = dis.readUTF();
 
@@ -114,29 +142,25 @@ class ClientHandler implements Runnable
                         break;
                     }
 
-                    System.out.println("You have " + gameBoard.getRemaining_guesses() + " guesses left.");
-                    System.out.println("What is your next guess?");
-                    System.out.println("Type in the characters for your guess and press enter.");
-                    System.out.println();
                     // print the received guess to the server console
                     System.out.println("Guess from " + name + ": " + received);
                     // help generate the feedback
                     feedback = gameBoard.generateFeedback(received);
                     System.out.println(feedback);
                     dos.writeUTF(feedback);
+                    // out of guess
+                    if(gameBoard.didPlayerLose()) {
+                        String lose = "Sorry, you are out of guesses. You lose, boo-hoo.";
+                        System.out.println(lose);
+                        dos.writeUTF(lose);
+                    }
                 }
-                if (gameBoard.didPlayerLose()) {
-                    // receive the guess (String) from client
-                    String lose = "Sorry, you are out of guesses. You lose, boo-hoo.";
-                    // help generate the feedback
-                    feedback = gameBoard.generateFeedback(received);
-                    System.out.println(feedback);
-                    System.out.println(lose);
-                    dos.writeUTF(lose);
-                    this.s.close();
-                    System.out.println("Connection closed");
-                    break;
-                }
+                // if not logged in connection closed
+                System.out.println("Connection closed");
+                dos.writeUTF("Connection closed");
+                this.s.close();
+                break;
+
 
             } catch (EOFException eofException){
                 System.out.println("Server closed connection");

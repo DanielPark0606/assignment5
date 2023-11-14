@@ -48,7 +48,7 @@ public class MyClient {
                             // read the message sent to this client
                             String msg = dis.readUTF();
                             System.out.println(msg);
-                            if(msg.equals("Sorry, you are out of guesses. You lose, boo-hoo.")){
+                            if(msg.equals("Connection closed")){
                                 System.out.println("Closing this connection");
                                 s.close();
                                 break;
