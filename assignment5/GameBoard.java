@@ -116,7 +116,8 @@ public class GameBoard {
             Feedback feedback = new Feedback(blackPegs, whitePegs);
             feedbackHistory.add(feedback);
             if (blackPegs == GameConfiguration.pegNumber) {
-                output = playerGuess.getStringColors() + " -> Result: " + feedback + " - You win !!";
+                // flag for winner
+                output =  "You win !!";
                 remainingGuesses = 0;
             } else {
                 if (remainingGuesses >= 0) {

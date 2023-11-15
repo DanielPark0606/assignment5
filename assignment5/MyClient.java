@@ -8,18 +8,17 @@ public class MyClient {
         // create scanner for user input
         Scanner scn = new Scanner(System.in);
 
-        try{
+        try {
             // getting localhost ip
             InetAddress ip = InetAddress.getByName("localhost");
             // attempts to establish connection to server on 6666 host
-            Socket s = new Socket(ip,1234);
+            Socket s = new Socket(ip, 1234);
             // this stream is used to send data to server
             DataInputStream dis = new DataInputStream(s.getInputStream());
-            DataOutputStream dos =new DataOutputStream(s.getOutputStream());
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
             // sendMessage thread
-            Thread sendMessage = new Thread(new Runnable()
-            {
+            Thread sendMessage = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (true) {
@@ -38,8 +37,7 @@ public class MyClient {
             });
 
             // readMessage thread
-            Thread readMessage = new Thread(new Runnable()
-            {
+            Thread readMessage = new Thread(new Runnable() {
                 @Override
                 public void run() {
 
@@ -48,14 +46,13 @@ public class MyClient {
                             // read the message sent to this client
                             String msg = dis.readUTF();
                             System.out.println(msg);
-                            if(msg.equals("Connection closed")){
-                                System.out.println("Closing this connection");
+                            // if message is connection closed then close socket
+                            if (msg.equals("Connection closed")) {
+                                // already closes the socket
                                 s.close();
                                 break;
                             }
-                        }
-                        catch (IOException e) {
-
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
@@ -63,8 +60,9 @@ public class MyClient {
             });
             sendMessage.start();
             readMessage.start();
+        }
 
-        }catch(Exception e){
+        catch(Exception e){
             System.out.println(e);
         }
     }
