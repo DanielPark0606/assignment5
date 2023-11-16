@@ -77,12 +77,24 @@ class ClientHandler implements Runnable {
         synchronized (ar) {
             for (ClientHandler client : ar) {
                 try {
-                    client.dos.writeUTF( "Game Over!");
                     client.dos.writeUTF(message);
-                    client.s.close();
+                    client.dos.writeUTF( "Connection closed");
                 }catch (IOException e) {
                     e.printStackTrace();
                     // Handle the exception if needed
+                }
+            }
+        }
+    }
+    // Method to close the sockets for all clients
+    public void closeAllSockets() {
+        synchronized (ar) {
+            for (ClientHandler client : ar) {
+                try {
+                    client.s.close();
+                } catch (IOException e) {
+                    // Log the exception instead of printing it
+                    System.out.println(e);
                 }
             }
         }
@@ -110,7 +122,7 @@ class ClientHandler implements Runnable {
                 dos.writeUTF("You have " + GameConfiguration.guessNumber + " guesses to figure out the secret code or you lose the\n" +
                         "game. Are you ready to play? (Y/N): ");
                 received = dis.readUTF();
-                if (received.equals("Y")) {
+                if(received.equals("Y")) {
                     isloggedin = true;
                     //dos.writeUTF("Y");
                     //System.out.println("Y");
@@ -160,7 +172,9 @@ class ClientHandler implements Runnable {
                     // check for winner creation and close all client socket
                     if (feedback.equals("You win !!")) {
                         winnerCreated = true;
-                        broadcast("Connection closed");
+                        broadcast("Game Over! Player " + name + " has won!");
+                        closeAllSockets();
+                        break;
                     }
                     // out of guess
                     if (gameBoard.didPlayerLose()) {
@@ -175,13 +189,14 @@ class ClientHandler implements Runnable {
                     System.out.println("Connection closed");
                     dos.writeUTF("Connection closed");
                     this.s.close();
+                    return;
                 }
 
             } catch (EOFException eofException) {
                 System.out.println("Server closed connection");
                 break;
             } catch (SocketException socketException){
-                System.out.println("Socket issue: " + socketException.getMessage());
+                System.out.println(socketException.getMessage());
                 break;
             } catch (IOException e) {
                 e.printStackTrace();

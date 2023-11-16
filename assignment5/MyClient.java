@@ -50,11 +50,15 @@ public class MyClient {
                             if (msg.equals("Connection closed")) {
                                 // already closes the socket
                                 s.close();
-                                break;
+                                return;
                             }
+                        } catch (SocketException socketException){
+                            System.out.println(socketException.getMessage());
+                            break;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
                     }
                 }
             });
