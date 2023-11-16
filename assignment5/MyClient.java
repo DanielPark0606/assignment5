@@ -21,51 +21,60 @@ public class MyClient {
             Thread sendMessage = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (true) {
+                    try {
+                        while (true) {
+                            // read the message to deliver.
+                            String msg = scn.nextLine();
 
-                        // read the message to deliver.
-                        String msg = scn.nextLine();
-
-                        try {
-                            // write on the output stream
-                            dos.writeUTF(msg);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            try {
+                                // write on the output stream
+                                dos.writeUTF(msg);
+                            } catch (SocketException se) {
+                                // Handle the broken pipe exception
+                                System.out.println("Server closed the connection.");
+                                break;
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             });
+
 
             // readMessage thread
             Thread readMessage = new Thread(new Runnable() {
                 @Override
                 public void run() {
-
-                    while (true) {
-                        try {
+                    try {
+                        while (true) {
                             // read the message sent to this client
                             String msg = dis.readUTF();
                             System.out.println(msg);
                             // if message is connection closed then close socket
                             if (msg.equals("Connection closed")) {
-                                // already closes the socket
-                                s.close();
-                                return;
+                                break;      // exit loop when socket closed
                             }
-                        } catch (SocketException socketException){
-                            System.out.println(socketException.getMessage());
-                            break;
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
-
+                    }
+                    catch (EOFException eofException) {
+                        // This exception is expected when the socket is closed
+                        System.out.println("Socket closed by the other end");
+                    } catch(SocketException socketException){
+                        System.out.println(socketException.getMessage());
+                    } catch(IOException e){
+                        e.printStackTrace();
                     }
                 }
             });
             sendMessage.start();
             readMessage.start();
+            // close the socket and scanner
+//            dis.close();
+//            dos.close();
+//            scn.close();
+//            s.close();
         }
-
         catch(Exception e){
             System.out.println(e);
         }

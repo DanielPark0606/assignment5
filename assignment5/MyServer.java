@@ -186,9 +186,9 @@ class ClientHandler implements Runnable {
                 // skip this part if winner created
                 if(!winnerCreated){
                     // connection closed for only current client socket
-                    System.out.println("Connection closed");
+                    //System.out.println("Connection closed");
                     dos.writeUTF("Connection closed");
-                    this.s.close();
+                    //this.s.close();
                     return;
                 }
 
